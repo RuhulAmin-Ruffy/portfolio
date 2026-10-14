@@ -35,6 +35,13 @@ export default function SettingsForm({ initial }: { initial: SiteSettings }) {
           {text("name", "Name")}
           {text("titleLine", "Title line", "Shown under your name in the hero.")}
         </div>
+        <div className="field">
+          <span className="label">Logo</span>
+          <ImageField contain value={s.logoId} onChange={(v) => update("logoId", v)} emptyLabel="Colour mark" />
+          <span className="help">
+            Replaces the four-colour square in the header, admin and browser tab. A square PNG with a transparent background works best.
+          </span>
+        </div>
         <div className="grid-2">
           <div className="field">
             <span className="label">Profile photo (hero)</span>

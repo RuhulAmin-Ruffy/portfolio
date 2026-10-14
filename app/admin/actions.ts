@@ -53,6 +53,7 @@ export async function saveSettings(input: SiteSettings): Promise<Result> {
     else if (typeof def === "boolean") (clean as any)[key] = Boolean(v);
   }
   if (!clean.name) return { ok: false, error: "Name is required" };
+  clean.logoId = uuidOrNull(input.logoId);
   clean.profilePhotoId = uuidOrNull(input.profilePhotoId);
   clean.aboutPhotoId = uuidOrNull(input.aboutPhotoId);
   clean.marquee = (input.marquee ?? []).map((m) => str(m, 80)).filter(Boolean);
@@ -290,6 +291,7 @@ export async function deleteMedia(id: string): Promise<Result> {
     update settings set data = data
       || case when data->>'profilePhotoId' = ${mid} then '{"profilePhotoId": null}'::jsonb else '{}'::jsonb end
       || case when data->>'aboutPhotoId' = ${mid} then '{"aboutPhotoId": null}'::jsonb else '{}'::jsonb end
+      || case when data->>'logoId' = ${mid} then '{"logoId": null}'::jsonb else '{}'::jsonb end
     where id = 1`;
   await db()`delete from media where id = ${mid}`;
   refreshSite();

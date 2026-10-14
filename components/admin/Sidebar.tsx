@@ -18,13 +18,17 @@ const NAV = [
   { href: "/admin/settings", label: "Site content", d: "M4 6h16M4 12h16M4 18h10" },
 ];
 
-export default function Sidebar() {
+export default function Sidebar({ logoUrl }: { logoUrl: string | null }) {
   const path = usePathname();
   const active = (href: string) => (href === "/admin" ? path === href : path.startsWith(href));
   return (
     <aside className="sidebar">
       <Link href="/admin" className="brand">
-        <span className="brand-mark" aria-hidden="true"><span></span><span></span><span></span><span></span></span>
+        {logoUrl ? (
+          <img className="brand-logo" src={logoUrl} alt="" />
+        ) : (
+          <span className="brand-mark" aria-hidden="true"><span></span><span></span><span></span><span></span></span>
+        )}
         <span className="brand-name">Portfolio admin</span>
       </Link>
       {NAV.map((n) => (

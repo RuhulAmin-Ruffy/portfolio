@@ -11,6 +11,7 @@ export type SiteSettings = {
   heroPrimaryLabel: string;
   heroSecondaryLabel: string;
   navCtaLabel: string;
+  logoId: string | null;
   profilePhotoId: string | null;
   aboutPhotoId: string | null;
   marquee: string[];

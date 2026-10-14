@@ -3,9 +3,9 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-type Props = { name: string; ctaLabel: string; showIllustration: boolean };
+type Props = { name: string; ctaLabel: string; showIllustration: boolean; logoUrl: string | null };
 
-export default function SiteHeader({ name, ctaLabel, showIllustration }: Props) {
+export default function SiteHeader({ name, ctaLabel, showIllustration, logoUrl }: Props) {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
 
@@ -26,9 +26,13 @@ export default function SiteHeader({ name, ctaLabel, showIllustration }: Props) 
     <header className="site-header">
       <div className={`floating-nav${scrolled ? " scrolled" : ""}`}>
         <Link href="/" className="logo" onClick={() => setOpen(false)}>
-          <span className="logo-mark" aria-hidden="true">
-            <span></span><span></span><span></span><span></span>
-          </span>
+          {logoUrl ? (
+            <img className="logo-img" src={logoUrl} alt="" />
+          ) : (
+            <span className="logo-mark" aria-hidden="true">
+              <span></span><span></span><span></span><span></span>
+            </span>
+          )}
           {name}
         </Link>
         <nav className="nav-links" aria-label="Primary">

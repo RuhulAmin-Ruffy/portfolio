@@ -11,6 +11,7 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   heroPrimaryLabel: "View work",
   heroSecondaryLabel: "Get in touch",
   navCtaLabel: "Say hello",
+  logoId: null,
   profilePhotoId: null,
   aboutPhotoId: null,
   marquee: [],
