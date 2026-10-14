@@ -4,7 +4,8 @@ import PageLightbox from "@/components/site/PageLightbox";
 import ProjectVisual from "@/components/site/ProjectVisual";
 import { getProjectBySlug, getProjects, mediaUrl, paragraphs } from "@/lib/content";
 
-export const revalidate = 3600;
+// Re-check the database at most once a minute, so edits saved from any server (e.g. localhost) show up live.
+export const revalidate = 60;
 
 export async function generateStaticParams() {
   try {

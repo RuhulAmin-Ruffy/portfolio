@@ -3,7 +3,8 @@ import IllustrationGrid from "@/components/site/IllustrationGrid";
 import ProjectVisual from "@/components/site/ProjectVisual";
 import { getIllustrations, getProjects, getSettings, mediaUrl, paragraphs, splitFeatured } from "@/lib/content";
 
-export const revalidate = 3600;
+// Re-check the database at most once a minute, so edits saved from any server (e.g. localhost) show up live.
+export const revalidate = 60;
 
 export default async function Home() {
   const [s, projects, illustrations] = await Promise.all([getSettings(), getProjects(), getIllustrations()]);
