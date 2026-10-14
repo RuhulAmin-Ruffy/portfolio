@@ -1,0 +1,263 @@
+"use server";
+
+import { createHash, timingSafeEqual } from "node:crypto";
+import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+import { requireAdmin } from "@/lib/admin";
+import { SESSION_COOKIE, createSessionToken, sessionCookieOptions } from "@/lib/auth";
+import { DEFAULT_SETTINGS } from "@/lib/content";
+import { db } from "@/lib/db";
+import { ILLO_COLORS, PLACEHOLDERS, type SiteSettings } from "@/lib/types";
+
+type Result = { ok: true; id?: number } | { ok: false; error: string };
+
+function refreshSite() {
+  revalidatePath("/", "layout");
+}
+
+const str = (v: unknown, max = 5000) => (typeof v === "string" ? v.trim().slice(0, max) : "");
+const uuidOrNull = (v: unknown) =>
+  typeof v === "string" && /^[0-9a-f-]{36}$/i.test(v) ? v : null;
+
+// ---------- auth ----------
+
+export async function login(_prev: { error?: string } | undefined, form: FormData) {
+  const expected = process.env.ADMIN_PASSWORD ?? "";
+  const given = String(form.get("password") ?? "");
+  const hash = (s: string) => createHash("sha256").update(s).digest();
+  // Small fixed delay blunts brute force; hashing first makes the compare constant-time.
+  await new Promise((r) => setTimeout(r, 400));
+  if (!expected || !timingSafeEqual(hash(given), hash(expected))) {
+    return { error: "Incorrect password" };
+  }
+  const store = await cookies();
+  store.set(SESSION_COOKIE, await createSessionToken(), sessionCookieOptions);
+  redirect("/admin");
+}
+
+export async function logout() {
+  (await cookies()).delete(SESSION_COOKIE);
+  redirect("/admin/login");
+}
+
+// ---------- settings ----------
+
+export async function saveSettings(input: SiteSettings): Promise<Result> {
+  await requireAdmin();
+  const clean: SiteSettings = { ...DEFAULT_SETTINGS };
+  for (const key of Object.keys(DEFAULT_SETTINGS) as (keyof SiteSettings)[]) {
+    const v = input[key];
+    const def = DEFAULT_SETTINGS[key];
+    if (typeof def === "string") (clean as any)[key] = str(v);
+    else if (typeof def === "boolean") (clean as any)[key] = Boolean(v);
+  }
+  if (!clean.name) return { ok: false, error: "Name is required" };
+  clean.profilePhotoId = uuidOrNull(input.profilePhotoId);
+  clean.aboutPhotoId = uuidOrNull(input.aboutPhotoId);
+  clean.marquee = (input.marquee ?? []).map((m) => str(m, 80)).filter(Boolean);
+  clean.skillGroups = (input.skillGroups ?? [])
+    .map((g) => ({ title: str(g.title, 80), items: (g.items ?? []).map((i) => str(i, 80)).filter(Boolean) }))
+    .filter((g) => g.title);
+  clean.socials = (input.socials ?? [])
+    .map((s) => ({ label: str(s.label, 40), url: str(s.url, 500) }))
+    .filter((s) => s.label && s.url);
+
+  await db()`
+    insert into settings (id, data, updated_at) values (1, ${JSON.stringify(clean)}::jsonb, now())
+    on conflict (id) do update set data = excluded.data, updated_at = now()`;
+  refreshSite();
+  return { ok: true };
+}
+
+// ---------- projects ----------
+
+export type ProjectInput = {
+  id?: number;
+  title: string;
+  slug: string;
+  summary: string;
+  body: string;
+  tags: string[];
+  coverId: string | null;
+  gallery: string[];
+  placeholder: string;
+  featured: boolean;
+  published: boolean;
+  year: string;
+  client: string;
+  role: string;
+  linkUrl: string;
+};
+
+function slugify(s: string) {
+  return s
+    .toLowerCase()
+    .normalize("NFKD")
+    .replace(/[^\w\s-]/g, "")
+    .trim()
+    .replace(/[\s_-]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 80);
+}
+
+export async function saveProject(input: ProjectInput): Promise<Result> {
+  await requireAdmin();
+  const title = str(input.title, 160);
+  if (!title) return { ok: false, error: "Title is required" };
+  const slug = slugify(input.slug || title);
+  if (!slug) return { ok: false, error: "Slug is invalid" };
+  const link = str(input.linkUrl, 500);
+  if (link && !/^https?:\/\//i.test(link)) return { ok: false, error: "Live link must start with http:// or https://" };
+
+  const p = {
+    title,
+    slug,
+    summary: str(input.summary, 1000),
+    body: str(input.body, 20000),
+    tags: (input.tags ?? []).map((t) => str(t, 40)).filter(Boolean).slice(0, 6),
+    coverId: uuidOrNull(input.coverId),
+    gallery: (input.gallery ?? []).map(uuidOrNull).filter((x): x is string => !!x).slice(0, 24),
+    placeholder: (PLACEHOLDERS as readonly string[]).includes(input.placeholder) ? input.placeholder : "plain",
+    featured: Boolean(input.featured),
+    published: Boolean(input.published),
+    year: str(input.year, 20),
+    client: str(input.client, 120),
+    role: str(input.role, 120),
+    link,
+  };
+
+  const clash = await db()`select id from projects where slug = ${slug} and id <> ${input.id ?? 0}`;
+  if (clash.length) return { ok: false, error: `Another project already uses the URL slug "${slug}"` };
+
+  let id = input.id;
+  if (id) {
+    await db()`
+      update projects set title=${p.title}, slug=${p.slug}, summary=${p.summary}, body=${p.body},
+        tags=${p.tags}, cover_id=${p.coverId}, gallery=${p.gallery}::uuid[], placeholder=${p.placeholder},
+        featured=${p.featured}, published=${p.published}, year=${p.year}, client=${p.client},
+        role=${p.role}, link_url=${p.link}, updated_at=now()
+      where id=${id}`;
+  } else {
+    const rows = await db()`
+      insert into projects (title, slug, summary, body, tags, cover_id, gallery, placeholder, featured, published,
+        year, client, role, link_url, sort_order)
+      values (${p.title}, ${p.slug}, ${p.summary}, ${p.body}, ${p.tags}, ${p.coverId}, ${p.gallery}::uuid[],
+        ${p.placeholder}, ${p.featured}, ${p.published}, ${p.year}, ${p.client}, ${p.role}, ${p.link},
+        (select coalesce(min(sort_order), 0) - 1 from projects))
+      returning id`;
+    id = rows[0].id as number;
+  }
+  if (p.featured) await db()`update projects set featured = false where id <> ${id}`;
+  refreshSite();
+  return { ok: true, id };
+}
+
+export async function deleteProject(id: number): Promise<Result> {
+  await requireAdmin();
+  await db()`delete from projects where id = ${id}`;
+  refreshSite();
+  return { ok: true };
+}
+
+export async function setProjectFlag(id: number, flag: "featured" | "published", value: boolean): Promise<Result> {
+  await requireAdmin();
+  if (flag === "featured") {
+    if (value) await db()`update projects set featured = (id = ${id})`;
+    else await db()`update projects set featured = false where id = ${id}`;
+  } else {
+    await db()`update projects set published = ${value} where id = ${id}`;
+  }
+  refreshSite();
+  return { ok: true };
+}
+
+export async function reorderProjects(ids: number[]): Promise<Result> {
+  await requireAdmin();
+  const clean = ids.map(Number).filter(Number.isInteger);
+  await db()`
+    update projects set sort_order = x.ord
+    from unnest(${clean}::int[]) with ordinality as x(id, ord)
+    where projects.id = x.id`;
+  refreshSite();
+  return { ok: true };
+}
+
+// ---------- illustrations ----------
+
+export type IllustrationInput = {
+  id?: number;
+  title: string;
+  caption: string;
+  imageId: string | null;
+  color: string;
+  published: boolean;
+};
+
+export async function saveIllustration(input: IllustrationInput): Promise<Result> {
+  await requireAdmin();
+  const title = str(input.title, 120);
+  if (!title) return { ok: false, error: "Title is required" };
+  const caption = str(input.caption, 160);
+  const imageId = uuidOrNull(input.imageId);
+  const color = (ILLO_COLORS as readonly string[]).includes(input.color) ? input.color : "violet";
+  const published = Boolean(input.published);
+
+  let id = input.id;
+  if (id) {
+    await db()`update illustrations set title=${title}, caption=${caption}, image_id=${imageId},
+      color=${color}, published=${published} where id=${id}`;
+  } else {
+    const rows = await db()`
+      insert into illustrations (title, caption, image_id, color, published, sort_order)
+      values (${title}, ${caption}, ${imageId}, ${color}, ${published},
+        (select coalesce(min(sort_order), 0) - 1 from illustrations))
+      returning id`;
+    id = rows[0].id as number;
+  }
+  refreshSite();
+  return { ok: true, id };
+}
+
+export async function deleteIllustration(id: number): Promise<Result> {
+  await requireAdmin();
+  await db()`delete from illustrations where id = ${id}`;
+  refreshSite();
+  return { ok: true };
+}
+
+export async function setIllustrationPublished(id: number, value: boolean): Promise<Result> {
+  await requireAdmin();
+  await db()`update illustrations set published = ${value} where id = ${id}`;
+  refreshSite();
+  return { ok: true };
+}
+
+export async function reorderIllustrations(ids: number[]): Promise<Result> {
+  await requireAdmin();
+  const clean = ids.map(Number).filter(Number.isInteger);
+  await db()`
+    update illustrations set sort_order = x.ord
+    from unnest(${clean}::int[]) with ordinality as x(id, ord)
+    where illustrations.id = x.id`;
+  refreshSite();
+  return { ok: true };
+}
+
+// ---------- media ----------
+
+export async function deleteMedia(id: string): Promise<Result> {
+  await requireAdmin();
+  const mid = uuidOrNull(id);
+  if (!mid) return { ok: false, error: "Invalid id" };
+  // cover_id / image_id are cleared by the FK; arrays and settings need a manual sweep.
+  await db()`update projects set gallery = array_remove(gallery, ${mid}::uuid) where ${mid}::uuid = any(gallery)`;
+  await db()`
+    update settings set data = data
+      || case when data->>'profilePhotoId' = ${mid} then '{"profilePhotoId": null}'::jsonb else '{}'::jsonb end
+      || case when data->>'aboutPhotoId' = ${mid} then '{"aboutPhotoId": null}'::jsonb else '{}'::jsonb end
+    where id = 1`;
+  await db()`delete from media where id = ${mid}`;
+  refreshSite();
+  return { ok: true };
+}
