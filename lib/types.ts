@@ -32,6 +32,18 @@ export type SiteSettings = {
 export const PLACEHOLDERS = ["plain", "flowly", "bazaarly", "transit", "nur"] as const;
 export type Placeholder = (typeof PLACEHOLDERS)[number];
 
+export const SECTION_LAYOUTS = ["grid", "full", "side"] as const;
+export type SectionLayout = (typeof SECTION_LAYOUTS)[number];
+
+/** One topic of a case study: its own heading, text and images. */
+export type ProjectSection = {
+  id: string;
+  heading: string;
+  body: string;
+  images: string[];
+  layout: SectionLayout;
+};
+
 export type Project = {
   id: number;
   slug: string;
@@ -41,6 +53,7 @@ export type Project = {
   tags: string[];
   coverId: string | null;
   gallery: string[];
+  sections: ProjectSection[];
   placeholder: Placeholder;
   featured: boolean;
   published: boolean;

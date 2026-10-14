@@ -8,6 +8,7 @@ import ChipsInput from "./ChipsInput";
 import GalleryField from "./GalleryField";
 import ImageField from "./ImageField";
 import SaveBar from "./SaveBar";
+import SectionsEditor from "./SectionsEditor";
 import Switch from "./Switch";
 import { useEditor } from "./useEditor";
 
@@ -61,14 +62,15 @@ export default function ProjectForm({ initial }: { initial: ProjectInput }) {
 
       <div className="card">
         <h2>Images</h2>
-        <p className="hint">The cover is used on cards and the project page. For the featured project, the first two gallery images fill the side tiles.</p>
+        <p className="hint">The cover is used on cards and at the top of the project page. For the featured project, the first two “Home page extras” fill the small tiles beside it on the home page.</p>
         <div className="field">
           <span className="label">Cover image</span>
           <ImageField value={p.coverId} onChange={(v) => update("coverId", v)} />
         </div>
         <div className="field">
-          <span className="label">Gallery</span>
+          <span className="label">Home page extras</span>
           <GalleryField value={p.gallery} onChange={(v) => update("gallery", v)} />
+          <span className="help">Also shown at the end of the project page. For images that belong to a topic, use Sections below instead.</span>
         </div>
         <div className="field">
           <label htmlFor="placeholder">Placeholder style</label>
@@ -80,10 +82,10 @@ export default function ProjectForm({ initial }: { initial: ProjectInput }) {
       </div>
 
       <div className="card">
-        <h2>Case study</h2>
-        <p className="hint">The full write-up on the project page. Separate paragraphs with a blank line.</p>
+        <h2>Overview</h2>
+        <p className="hint">The introduction at the top of the project page. Separate paragraphs with a blank line.</p>
         <div className="field">
-          <textarea className="textarea tall" aria-label="Case study" value={p.body} onChange={(e) => update("body", e.target.value)} />
+          <textarea className="textarea" aria-label="Overview" value={p.body} onChange={(e) => update("body", e.target.value)} />
         </div>
         <div className="grid-3">
           <div className="field"><label htmlFor="year">Year</label><input id="year" className="input" value={p.year} onChange={(e) => update("year", e.target.value)} /></div>
@@ -94,6 +96,12 @@ export default function ProjectForm({ initial }: { initial: ProjectInput }) {
           <label htmlFor="link">Live link</label>
           <input id="link" className="input" placeholder="https://…" value={p.linkUrl} onChange={(e) => update("linkUrl", e.target.value)} />
         </div>
+      </div>
+
+      <div className="card">
+        <h2>Sections</h2>
+        <p className="hint">Break the project into parts. Each section gets its own heading, text and images on the project page, in this order.</p>
+        <SectionsEditor value={p.sections} onChange={(v) => update("sections", v)} />
       </div>
 
       <div className="card">

@@ -8,7 +8,7 @@ import { requireAdmin } from "@/lib/admin";
 import { SESSION_COOKIE, createSessionToken, sessionCookieOptions } from "@/lib/auth";
 import { DEFAULT_SETTINGS } from "@/lib/content";
 import { db } from "@/lib/db";
-import { ILLO_COLORS, PLACEHOLDERS, type SiteSettings } from "@/lib/types";
+import { ILLO_COLORS, PLACEHOLDERS, SECTION_LAYOUTS, type ProjectSection, type SiteSettings } from "@/lib/types";
 
 type Result = { ok: true; id?: number } | { ok: false; error: string };
 
@@ -81,6 +81,7 @@ export type ProjectInput = {
   tags: string[];
   coverId: string | null;
   gallery: string[];
+  sections: ProjectSection[];
   placeholder: string;
   featured: boolean;
   published: boolean;
@@ -101,6 +102,23 @@ function slugify(s: string) {
     .slice(0, 80);
 }
 
+function cleanSections(input: unknown): ProjectSection[] {
+  if (!Array.isArray(input)) return [];
+  return input
+    .slice(0, 30)
+    .map((raw, i) => {
+      const s = (raw ?? {}) as Partial<ProjectSection>;
+      return {
+        id: str(s.id, 64) || `s${i}`,
+        heading: str(s.heading, 160),
+        body: str(s.body, 10000),
+        images: (Array.isArray(s.images) ? s.images : []).map(uuidOrNull).filter((x): x is string => !!x).slice(0, 30),
+        layout: (SECTION_LAYOUTS as readonly string[]).includes(s.layout as string) ? (s.layout as ProjectSection["layout"]) : "grid",
+      };
+    })
+    .filter((s) => s.heading || s.body || s.images.length);
+}
+
 export async function saveProject(input: ProjectInput): Promise<Result> {
   await requireAdmin();
   const title = str(input.title, 160);
@@ -118,6 +136,7 @@ export async function saveProject(input: ProjectInput): Promise<Result> {
     tags: (input.tags ?? []).map((t) => str(t, 40)).filter(Boolean).slice(0, 6),
     coverId: uuidOrNull(input.coverId),
     gallery: (input.gallery ?? []).map(uuidOrNull).filter((x): x is string => !!x).slice(0, 24),
+    sections: JSON.stringify(cleanSections(input.sections)),
     placeholder: (PLACEHOLDERS as readonly string[]).includes(input.placeholder) ? input.placeholder : "plain",
     featured: Boolean(input.featured),
     published: Boolean(input.published),
@@ -134,16 +153,17 @@ export async function saveProject(input: ProjectInput): Promise<Result> {
   if (id) {
     await db()`
       update projects set title=${p.title}, slug=${p.slug}, summary=${p.summary}, body=${p.body},
-        tags=${p.tags}, cover_id=${p.coverId}, gallery=${p.gallery}::uuid[], placeholder=${p.placeholder},
+        tags=${p.tags}, cover_id=${p.coverId}, gallery=${p.gallery}::uuid[], sections=${p.sections}::jsonb,
+        placeholder=${p.placeholder},
         featured=${p.featured}, published=${p.published}, year=${p.year}, client=${p.client},
         role=${p.role}, link_url=${p.link}, updated_at=now()
       where id=${id}`;
   } else {
     const rows = await db()`
-      insert into projects (title, slug, summary, body, tags, cover_id, gallery, placeholder, featured, published,
-        year, client, role, link_url, sort_order)
+      insert into projects (title, slug, summary, body, tags, cover_id, gallery, sections, placeholder, featured,
+        published, year, client, role, link_url, sort_order)
       values (${p.title}, ${p.slug}, ${p.summary}, ${p.body}, ${p.tags}, ${p.coverId}, ${p.gallery}::uuid[],
-        ${p.placeholder}, ${p.featured}, ${p.published}, ${p.year}, ${p.client}, ${p.role}, ${p.link},
+        ${p.sections}::jsonb, ${p.placeholder}, ${p.featured}, ${p.published}, ${p.year}, ${p.client}, ${p.role}, ${p.link},
         (select coalesce(min(sort_order), 0) - 1 from projects))
       returning id`;
     id = rows[0].id as number;
@@ -252,6 +272,16 @@ export async function deleteMedia(id: string): Promise<Result> {
   if (!mid) return { ok: false, error: "Invalid id" };
   // cover_id / image_id are cleared by the FK; arrays and settings need a manual sweep.
   await db()`update projects set gallery = array_remove(gallery, ${mid}::uuid) where ${mid}::uuid = any(gallery)`;
+  await db()`
+    update projects set sections = (
+      select coalesce(jsonb_agg(
+        jsonb_set(s, '{images}', coalesce((
+          select jsonb_agg(img) from jsonb_array_elements(s->'images') img where img #>> '{}' <> ${mid}
+        ), '[]'::jsonb))
+      order by ord), '[]'::jsonb)
+      from jsonb_array_elements(sections) with ordinality as t(s, ord)
+    )
+    where sections @> ${JSON.stringify([{ images: [mid] }])}::jsonb`;
   await db()`
     update settings set data = data
       || case when data->>'profilePhotoId' = ${mid} then '{"profilePhotoId": null}'::jsonb else '{}'::jsonb end

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import PageLightbox from "@/components/site/PageLightbox";
 import ProjectVisual from "@/components/site/ProjectVisual";
 import { getProjectBySlug, getProjects, mediaUrl, paragraphs } from "@/lib/content";
 
@@ -40,6 +41,7 @@ export default async function ProjectPage({ params }: Params) {
     ["Role", project.role],
   ].filter(([, v]) => v);
   const body = paragraphs(project.body);
+  const sections = project.sections;
 
   return (
     <>
@@ -82,17 +84,45 @@ export default async function ProjectPage({ params }: Params) {
         </section>
       )}
 
+      {sections.map((s, i) => {
+        const text = paragraphs(s.body);
+        const images = s.images.length > 0 && (
+          <div className={`cs-images cs-${s.layout}`}>
+            {s.images.map((id, j) => (
+              <figure key={id} className="reveal">
+                <img src={`/api/media/${id}`} alt={`${project.title} — ${s.heading || `section ${i + 1}`}, image ${j + 1}`} loading="lazy" data-zoom />
+              </figure>
+            ))}
+          </div>
+        );
+        return (
+          <section key={s.id} className={`case-section cs-layout-${s.layout}`}>
+            <div className="wrap">
+              <div className="cs-text reveal">
+                <span className="cs-num mono">{String(i + 1).padStart(2, "0")}</span>
+                {s.heading && <h2>{s.heading}</h2>}
+                {text.length > 0 && <div className="prose">{text.map((p, k) => <p key={k}>{p}</p>)}</div>}
+              </div>
+              {images}
+            </div>
+          </section>
+        );
+      })}
+
       {project.gallery.length > 0 && (
         <section className="project-gallery">
           <div className="wrap">
+            {sections.length > 0 && <h2 className="gallery-title reveal">More images</h2>}
             {project.gallery.map((id, i) => (
               <figure key={id} className="reveal">
-                <img src={`/api/media/${id}`} alt={`${project.title} — image ${i + 1}`} loading="lazy" />
+                <img src={`/api/media/${id}`} alt={`${project.title} — image ${i + 1}`} loading="lazy" data-zoom />
               </figure>
             ))}
           </div>
         </section>
       )}
+
+      <PageLightbox />
 
       {next && (
         <section style={{ paddingTop: 0 }}>

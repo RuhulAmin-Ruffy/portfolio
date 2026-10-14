@@ -50,6 +50,7 @@ function toProject(r: Row): Project {
     tags: r.tags ?? [],
     coverId: r.cover_id,
     gallery: r.gallery ?? [],
+    sections: r.sections ?? [],
     placeholder: r.placeholder,
     featured: r.featured,
     published: r.published,

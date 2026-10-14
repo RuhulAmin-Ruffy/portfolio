@@ -188,3 +188,13 @@ button.media-tile.selected{border-color:var(--violet);box-shadow:0 0 0 3px var(-
 .login p{color:var(--mute);margin-bottom:22px;}
 .login .err{color:var(--danger);font-size:13px;margin-bottom:12px;}
 .toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 16px;border-radius:10px;font-size:13px;z-index:200;animation:fade .2s ease;}
+
+/* case-study sections editor */
+.section-card{background:#fff;}
+.section-head{display:flex;gap:8px;align-items:center;margin-bottom:12px;}
+.section-head .grow{flex:1;font-family:var(--f-display);font-weight:600;font-size:15px;}
+.section-num{font-size:12px;color:var(--violet);background:var(--violet-soft);border-radius:6px;padding:4px 7px;font-weight:500;}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:9px;padding:3px;background:var(--bg);gap:2px;flex-wrap:wrap;}
+.seg button{border:none;background:none;font:inherit;font-size:12.5px;font-weight:600;padding:6px 12px;border-radius:7px;cursor:pointer;color:var(--soft);}
+.seg button:hover{color:var(--ink);}
+.seg button.on{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08);}

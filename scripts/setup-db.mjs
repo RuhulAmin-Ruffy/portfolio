@@ -64,6 +64,9 @@ await sql`
     created_at timestamptz not null default now()
   )`;
 
+// Case-study sections: [{ id, heading, body, images: uuid[], layout: "grid" | "full" | "side" }]
+await sql`alter table projects add column if not exists sections jsonb not null default '[]'::jsonb`;
+
 await sql`create index if not exists projects_order_idx on projects (sort_order, id)`;
 await sql`create index if not exists illustrations_order_idx on illustrations (sort_order, id)`;
 

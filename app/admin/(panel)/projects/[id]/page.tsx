@@ -19,7 +19,7 @@ export default async function EditProjectPage({ params }: { params: Promise<{ id
         key={p.id}
         initial={{
           id: p.id, title: p.title, slug: p.slug, summary: p.summary, body: p.body, tags: p.tags,
-          coverId: p.coverId, gallery: p.gallery, placeholder: p.placeholder, featured: p.featured,
+          coverId: p.coverId, gallery: p.gallery, sections: p.sections, placeholder: p.placeholder, featured: p.featured,
           published: p.published, year: p.year, client: p.client, role: p.role, linkUrl: p.linkUrl,
         }}
       />

@@ -12,7 +12,7 @@ export default function NewProjectPage() {
       </div>
       <ProjectForm
         initial={{
-          title: "", slug: "", summary: "", body: "", tags: [], coverId: null, gallery: [],
+          title: "", slug: "", summary: "", body: "", tags: [], coverId: null, gallery: [], sections: [],
           placeholder: "plain", featured: false, published: true, year: String(new Date().getFullYear()),
           client: "", role: "", linkUrl: "",
         }}
