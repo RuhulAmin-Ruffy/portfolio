@@ -10,7 +10,7 @@ export default function NewIllustrationPage() {
           <h1>New illustration</h1>
         </div>
       </div>
-      <IllustrationForm initial={{ title: "", caption: "", imageId: null, color: "violet", published: true }} />
+      <IllustrationForm initial={{ title: "", caption: "", date: "", details: "", imageId: null, color: "violet", published: true }} />
     </>
   );
 }

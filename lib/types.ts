@@ -71,6 +71,8 @@ export type Illustration = {
   id: number;
   title: string;
   caption: string;
+  date: string;
+  details: string;
   imageId: string | null;
   color: IlloColor;
   published: boolean;

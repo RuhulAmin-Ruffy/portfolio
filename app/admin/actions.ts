@@ -209,6 +209,8 @@ export type IllustrationInput = {
   id?: number;
   title: string;
   caption: string;
+  date: string;
+  details: string;
   imageId: string | null;
   color: string;
   published: boolean;
@@ -219,18 +221,20 @@ export async function saveIllustration(input: IllustrationInput): Promise<Result
   const title = str(input.title, 120);
   if (!title) return { ok: false, error: "Title is required" };
   const caption = str(input.caption, 160);
+  const date = str(input.date, 60);
+  const details = str(input.details, 5000);
   const imageId = uuidOrNull(input.imageId);
   const color = (ILLO_COLORS as readonly string[]).includes(input.color) ? input.color : "violet";
   const published = Boolean(input.published);
 
   let id = input.id;
   if (id) {
-    await db()`update illustrations set title=${title}, caption=${caption}, image_id=${imageId},
+    await db()`update illustrations set title=${title}, caption=${caption}, date=${date}, details=${details}, image_id=${imageId},
       color=${color}, published=${published} where id=${id}`;
   } else {
     const rows = await db()`
-      insert into illustrations (title, caption, image_id, color, published, sort_order)
-      values (${title}, ${caption}, ${imageId}, ${color}, ${published},
+      insert into illustrations (title, caption, date, details, image_id, color, published, sort_order)
+      values (${title}, ${caption}, ${date}, ${details}, ${imageId}, ${color}, ${published},
         (select coalesce(min(sort_order), 0) - 1 from illustrations))
       returning id`;
     id = rows[0].id as number;

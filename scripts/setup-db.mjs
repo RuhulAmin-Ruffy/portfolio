@@ -67,6 +67,10 @@ await sql`
 // Case-study sections: [{ id, heading, body, images: uuid[], layout: "grid" | "full" | "side" }]
 await sql`alter table projects add column if not exists sections jsonb not null default '[]'::jsonb`;
 
+// Illustration date (free text, e.g. "March 2025") and optional longer details
+await sql`alter table illustrations add column if not exists date text not null default ''`;
+await sql`alter table illustrations add column if not exists details text not null default ''`;
+
 await sql`create index if not exists projects_order_idx on projects (sort_order, id)`;
 await sql`create index if not exists illustrations_order_idx on illustrations (sort_order, id)`;
 

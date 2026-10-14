@@ -3,7 +3,14 @@
 import { useCallback, useEffect, useState } from "react";
 import type { Illustration } from "@/lib/types";
 
-export default function IllustrationGrid({ items }: { items: Illustration[] }) {
+/** "tiles": caption over the artwork (home page). "detailed": title, date and details below each piece. */
+export default function IllustrationGrid({
+  items,
+  variant = "tiles",
+}: {
+  items: Illustration[];
+  variant?: "tiles" | "detailed";
+}) {
   const [index, setIndex] = useState<number | null>(null);
   const close = useCallback(() => setIndex(null), []);
   const step = useCallback(
@@ -31,12 +38,13 @@ export default function IllustrationGrid({ items }: { items: Illustration[] }) {
 
   return (
     <>
-      <div className="illo-grid">
-        {items.map((it, i) => (
+      <div className={`illo-grid${variant === "detailed" ? " detailed" : ""}`}>
+        {items.map((it, i) => {
+          const tile = (
           <button
             key={it.id}
             type="button"
-            className={`illo illo-${it.color} reveal${it.imageId ? " has-img" : ""}`}
+            className={`illo illo-${it.color}${variant === "tiles" ? " reveal" : ""}${it.imageId ? " has-img" : ""}`}
             onClick={() => setIndex(i)}
             aria-label={`Open ${it.title}`}
           >
@@ -45,12 +53,27 @@ export default function IllustrationGrid({ items }: { items: Illustration[] }) {
             ) : (
               <div className="blobshape" />
             )}
-            <div className="cap">
-              <div className="t">{it.title}</div>
-              <div className="m">{it.caption}</div>
-            </div>
+            {variant === "tiles" && (
+              <div className="cap">
+                <div className="t">{it.title}</div>
+                <div className="m">{it.caption}</div>
+              </div>
+            )}
           </button>
-        ))}
+          );
+          if (variant === "tiles") return tile;
+          const sub = [it.date, it.caption].filter(Boolean).join(" · ");
+          return (
+            <article key={it.id} className="illo-card reveal">
+              {tile}
+              <div className="illo-card-info">
+                <h2>{it.title}</h2>
+                {sub && <p className="sub mono">{sub}</p>}
+                {it.details && <p className="details">{it.details}</p>}
+              </div>
+            </article>
+          );
+        })}
       </div>
 
       {active && (
@@ -67,7 +90,8 @@ export default function IllustrationGrid({ items }: { items: Illustration[] }) {
             )}
             <figcaption>
               <div className="t">{active.title}</div>
-              <div className="m mono">{active.caption}</div>
+              <div className="m mono">{[active.date, active.caption].filter(Boolean).join(" · ")}</div>
+              {active.details && <p className="d">{active.details}</p>}
             </figcaption>
           </figure>
           <button className="lb-btn lb-close" aria-label="Close" onClick={close}>✕</button>

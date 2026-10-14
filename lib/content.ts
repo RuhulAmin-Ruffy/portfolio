@@ -67,6 +67,8 @@ function toIllustration(r: Row): Illustration {
     id: r.id,
     title: r.title,
     caption: r.caption,
+    date: r.date ?? "",
+    details: r.details ?? "",
     imageId: r.image_id,
     color: r.color,
     published: r.published,

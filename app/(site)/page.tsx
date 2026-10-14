@@ -6,6 +6,9 @@ import { getIllustrations, getProjects, getSettings, mediaUrl, paragraphs, split
 // Re-check the database at most once a minute, so edits saved from any server (e.g. localhost) show up live.
 export const revalidate = 60;
 
+const MORE_PROJECTS_ON_HOME = 3; // one row
+const ILLUSTRATIONS_ON_HOME = 6; // two rows
+
 export default async function Home() {
   const [s, projects, illustrations] = await Promise.all([getSettings(), getProjects(), getIllustrations()]);
   const { featured, others } = splitFeatured(projects);
@@ -65,7 +68,7 @@ export default async function Home() {
                 <h4 className="mono">{s.moreProjectsLabel}</h4>
               </div>
               <div className="other-projects-grid">
-                {others.map((p) => (
+                {others.slice(0, MORE_PROJECTS_ON_HOME).map((p) => (
                   <a key={p.id} href={`/work/${p.slug}`} className="mini-card reveal">
                     <ProjectVisual className="card-visual" imageId={p.coverId} placeholder={p.placeholder} alt={`${p.title} cover`} />
                     <div className="card-tags">
@@ -75,6 +78,9 @@ export default async function Home() {
                     <p>{p.summary}</p>
                   </a>
                 ))}
+              </div>
+              <div className="view-all-row reveal">
+                <a href="/work" className="view-all mono">View all projects <span aria-hidden="true">→</span></a>
               </div>
             </>
           )}
@@ -88,7 +94,14 @@ export default async function Home() {
               <h2>{s.illustrationHeading}</h2>
               {s.illustrationSubheading && <p>{s.illustrationSubheading}</p>}
             </div>
-            <IllustrationGrid items={illustrations} />
+            <IllustrationGrid items={illustrations.slice(0, ILLUSTRATIONS_ON_HOME)} />
+            {illustrations.length > ILLUSTRATIONS_ON_HOME && (
+              <div className="view-all-row reveal">
+                <a href="/illustrations" className="view-all mono">
+                  View all illustrations <span aria-hidden="true">→</span>
+                </a>
+              </div>
+            )}
           </div>
         </section>
       )}

@@ -17,7 +17,7 @@ export default async function EditIllustrationPage({ params }: { params: Promise
       </div>
       <IllustrationForm
         key={it.id}
-        initial={{ id: it.id, title: it.title, caption: it.caption, imageId: it.imageId, color: it.color, published: it.published }}
+        initial={{ id: it.id, title: it.title, caption: it.caption, date: it.date, details: it.details, imageId: it.imageId, color: it.color, published: it.published }}
       />
     </>
   );

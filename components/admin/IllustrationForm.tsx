@@ -36,6 +36,15 @@ export default function IllustrationForm({ initial }: { initial: IllustrationInp
           <div className="field"><label htmlFor="caption">Caption</label><input id="caption" className="input" placeholder="e.g. Digital ink, 2025" value={v.caption} onChange={(e) => update("caption", e.target.value)} /></div>
         </div>
         <div className="field">
+          <label htmlFor="date">Date</label>
+          <input id="date" className="input" style={{ maxWidth: 260 }} placeholder="e.g. March 2025" value={v.date} onChange={(e) => update("date", e.target.value)} />
+        </div>
+        <div className="field">
+          <label htmlFor="details">Details</label>
+          <textarea id="details" className="textarea" placeholder="Optional — the story behind the piece, tools, client…" value={v.details} onChange={(e) => update("details", e.target.value)} />
+          <span className="help">Shown on the All illustrations page and in the full-size view.</span>
+        </div>
+        <div className="field">
           <span className="label">Background colour</span>
           <div className="swatches" role="radiogroup" aria-label="Background colour">
             {ILLO_COLORS.map((c) => (
