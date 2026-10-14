@@ -90,6 +90,7 @@ export default function SettingsForm({ initial }: { initial: SiteSettings }) {
         <p className="hint">Separate paragraphs with a blank line.</p>
         {text("aboutHeading", "Heading")}
         {area("aboutBody", "Body", undefined, true)}
+        {text("experienceHeading", "Experience heading", "Your jobs are managed on the Experience page in the sidebar.")}
         <div className="field">
           <span className="label">Skill groups</span>
           <div className="stack">

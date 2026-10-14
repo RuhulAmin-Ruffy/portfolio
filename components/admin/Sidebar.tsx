@@ -13,6 +13,7 @@ const icon = (d: string) => (
 const NAV = [
   { href: "/admin", label: "Dashboard", d: "M3 12l9-8 9 8M5 10v10h14V10" },
   { href: "/admin/projects", label: "Projects", d: "M3 7h18v13H3zM8 7V4h8v3" },
+  { href: "/admin/experience", label: "Experience", d: "M4 8h16v12H4zM9 8V5h6v3M4 13h16" },
   { href: "/admin/illustrations", label: "Illustrations", d: "M12 3l2.5 5.5L20 9l-4 4 1 6-5-3-5 3 1-6-4-4 5.5-.5z" },
   { href: "/admin/media", label: "Media library", d: "M3 5h18v14H3zM3 15l5-4 4 3 3-2 6 4" },
   { href: "/admin/settings", label: "Site content", d: "M4 6h16M4 12h16M4 18h10" },

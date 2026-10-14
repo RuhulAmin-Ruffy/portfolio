@@ -1,5 +1,5 @@
 import { db } from "./db";
-import type { Illustration, MediaItem, Project, SiteSettings } from "./types";
+import type { Experience, Illustration, MediaItem, Project, SiteSettings } from "./types";
 
 export const DEFAULT_SETTINGS: SiteSettings = {
   name: "Your Name",
@@ -22,6 +22,7 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   illustrationSubheading: "",
   aboutHeading: "About",
   aboutBody: "",
+  experienceHeading: "Experience",
   skillGroups: [],
   contactHeading: "Let's build something.",
   contactBody: "",
@@ -104,6 +105,42 @@ export async function getIllustrations(opts: { includeDrafts?: boolean } = {}) {
 export async function getIllustrationById(id: number) {
   const rows = await db()`select * from illustrations where id = ${id} limit 1`;
   return rows[0] ? toIllustration(rows[0]) : null;
+}
+
+function toExperience(r: Row): Experience {
+  return {
+    id: r.id,
+    role: r.role,
+    company: r.company,
+    companyLogoId: r.company_logo_id,
+    companyUrl: r.company_url,
+    employmentType: r.employment_type,
+    location: r.location,
+    locationType: r.location_type,
+    startMonth: r.start_month,
+    startYear: r.start_year,
+    endMonth: r.end_month,
+    endYear: r.end_year,
+    isCurrent: r.is_current,
+    description: r.description,
+    skills: r.skills ?? [],
+    published: r.published,
+  };
+}
+
+/** Newest first, like LinkedIn: by start date, current roles winning ties. */
+export async function getExperiences(opts: { includeDrafts?: boolean } = {}) {
+  const rows = opts.includeDrafts
+    ? await db()`select * from experiences
+        order by start_year desc, coalesce(start_month, 0) desc, is_current desc, id desc`
+    : await db()`select * from experiences where published
+        order by start_year desc, coalesce(start_month, 0) desc, is_current desc, id desc`;
+  return rows.map(toExperience);
+}
+
+export async function getExperienceById(id: number) {
+  const rows = await db()`select * from experiences where id = ${id} limit 1`;
+  return rows[0] ? toExperience(rows[0]) : null;
 }
 
 export async function listMedia(): Promise<MediaItem[]> {

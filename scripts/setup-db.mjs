@@ -71,6 +71,28 @@ await sql`alter table projects add column if not exists sections jsonb not null 
 await sql`alter table illustrations add column if not exists date text not null default ''`;
 await sql`alter table illustrations add column if not exists details text not null default ''`;
 
+await sql`
+  create table if not exists experiences (
+    id serial primary key,
+    role text not null,
+    company text not null,
+    company_logo_id uuid references media(id) on delete set null,
+    company_url text not null default '',
+    employment_type text not null default '',
+    location text not null default '',
+    location_type text not null default '',
+    start_month integer,
+    start_year integer not null,
+    end_month integer,
+    end_year integer,
+    is_current boolean not null default false,
+    description text not null default '',
+    skills text[] not null default '{}',
+    published boolean not null default true,
+    created_at timestamptz not null default now(),
+    updated_at timestamptz not null default now()
+  )`;
+
 await sql`create index if not exists projects_order_idx on projects (sort_order, id)`;
 await sql`create index if not exists illustrations_order_idx on illustrations (sort_order, id)`;
 

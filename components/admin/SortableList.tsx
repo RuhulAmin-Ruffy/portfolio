@@ -23,7 +23,8 @@ export default function SortableList({
 }: {
   rows: ListRow[];
   editBase: string;
-  reorder: (ids: number[]) => Promise<unknown>;
+  /** Omit for lists that are sorted automatically. */
+  reorder?: (ids: number[]) => Promise<unknown>;
   remove: (id: number) => Promise<unknown>;
   emptyText: string;
 }) {
@@ -37,7 +38,7 @@ export default function SortableList({
     const next = [...rows];
     [next[i], next[i + d]] = [next[i + d], next[i]];
     setRows(next);
-    run(() => reorder(next.map((r) => r.id)));
+    if (reorder) run(() => reorder(next.map((r) => r.id)));
   };
 
   if (rows.length === 0) return <div className="rows"><p className="empty">{emptyText}</p></div>;
@@ -51,10 +52,14 @@ export default function SortableList({
         const r = fresh.get(r0.id) ?? r0;
         return (
           <div className="row" key={r.id}>
-            <div className="order">
-              <button aria-label="Move up" disabled={i === 0 || pending} onClick={() => move(i, -1)}>▲</button>
-              <button aria-label="Move down" disabled={i === rows.length - 1 || pending} onClick={() => move(i, 1)}>▼</button>
-            </div>
+            {reorder ? (
+              <div className="order">
+                <button aria-label="Move up" disabled={i === 0 || pending} onClick={() => move(i, -1)}>▲</button>
+                <button aria-label="Move down" disabled={i === rows.length - 1 || pending} onClick={() => move(i, 1)}>▼</button>
+              </div>
+            ) : (
+              <div />
+            )}
             <Link href={`${editBase}/${r.id}`} className={`thumb${r.swatch ? ` sw-${r.swatch}` : ""}`}>
               {r.imageId && <img src={`/api/media/${r.imageId}`} alt="" loading="lazy" />}
             </Link>

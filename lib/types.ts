@@ -22,6 +22,7 @@ export type SiteSettings = {
   illustrationSubheading: string;
   aboutHeading: string;
   aboutBody: string;
+  experienceHeading: string;
   skillGroups: SkillGroup[];
   contactHeading: string;
   contactBody: string;
@@ -78,6 +79,29 @@ export type Illustration = {
   color: IlloColor;
   published: boolean;
   sortOrder: number;
+};
+
+export const EMPLOYMENT_TYPES = ["Full-time", "Part-time", "Self-employed", "Freelance", "Contract", "Internship", "Apprenticeship", "Seasonal"] as const;
+export const LOCATION_TYPES = ["On-site", "Hybrid", "Remote"] as const;
+
+/** One role, LinkedIn-style. Consecutive roles at the same company are grouped on the site. */
+export type Experience = {
+  id: number;
+  role: string;
+  company: string;
+  companyLogoId: string | null;
+  companyUrl: string;
+  employmentType: string;
+  location: string;
+  locationType: string;
+  startMonth: number | null;
+  startYear: number;
+  endMonth: number | null;
+  endYear: number | null;
+  isCurrent: boolean;
+  description: string;
+  skills: string[];
+  published: boolean;
 };
 
 export type MediaItem = {

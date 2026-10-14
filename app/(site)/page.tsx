@@ -1,7 +1,8 @@
+import ExperienceList from "@/components/site/ExperienceList";
 import Hero from "@/components/site/Hero";
 import IllustrationGrid from "@/components/site/IllustrationGrid";
 import ProjectVisual from "@/components/site/ProjectVisual";
-import { getIllustrations, getProjects, getSettings, mediaUrl, paragraphs, splitFeatured } from "@/lib/content";
+import { getExperiences, getIllustrations, getProjects, getSettings, mediaUrl, paragraphs, splitFeatured } from "@/lib/content";
 
 // Re-check the database at most once a minute, so edits saved from any server (e.g. localhost) show up live.
 export const revalidate = 60;
@@ -10,7 +11,12 @@ const MORE_PROJECTS_ON_HOME = 3; // one row
 const ILLUSTRATIONS_ON_HOME = 6; // two rows
 
 export default async function Home() {
-  const [s, projects, illustrations] = await Promise.all([getSettings(), getProjects(), getIllustrations()]);
+  const [s, projects, illustrations, experiences] = await Promise.all([
+    getSettings(),
+    getProjects(),
+    getIllustrations(),
+    getExperiences(),
+  ]);
   const { featured, others } = splitFeatured(projects);
   const aboutPhoto = mediaUrl(s.aboutPhotoId);
   const marquee = s.marquee.length ? [...s.marquee, ...s.marquee] : [];
@@ -107,7 +113,7 @@ export default async function Home() {
       )}
 
       <section className="about" id="about">
-        <div className="wrap">
+        <div className="wrap about-grid">
           <div className={`about-photo reveal${aboutPhoto ? " has-img" : ""}`}>
             {aboutPhoto ? (
               <img src={aboutPhoto} alt={s.name} loading="lazy" />
@@ -130,6 +136,11 @@ export default async function Home() {
             ))}
           </div>
         </div>
+        {experiences.length > 0 && (
+          <div className="wrap">
+            <ExperienceList items={experiences} heading={s.experienceHeading} />
+          </div>
+        )}
       </section>
 
       <section id="contact">

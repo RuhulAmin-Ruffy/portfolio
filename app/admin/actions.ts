@@ -8,7 +8,7 @@ import { requireAdmin } from "@/lib/admin";
 import { SESSION_COOKIE, createSessionToken, sessionCookieOptions } from "@/lib/auth";
 import { DEFAULT_SETTINGS } from "@/lib/content";
 import { db } from "@/lib/db";
-import { ILLO_COLORS, PLACEHOLDERS, SECTION_LAYOUTS, type ProjectSection, type SiteSettings } from "@/lib/types";
+import { EMPLOYMENT_TYPES, ILLO_COLORS, LOCATION_TYPES, PLACEHOLDERS, SECTION_LAYOUTS, type ProjectSection, type SiteSettings } from "@/lib/types";
 
 type Result = { ok: true; id?: number } | { ok: false; error: string };
 
@@ -265,6 +265,98 @@ export async function reorderIllustrations(ids: number[]): Promise<Result> {
     update illustrations set sort_order = x.ord
     from unnest(${clean}::int[]) with ordinality as x(id, ord)
     where illustrations.id = x.id`;
+  refreshSite();
+  return { ok: true };
+}
+
+// ---------- experience ----------
+
+export type ExperienceInput = {
+  id?: number;
+  role: string;
+  company: string;
+  companyLogoId: string | null;
+  companyUrl: string;
+  employmentType: string;
+  location: string;
+  locationType: string;
+  startMonth: number | null;
+  startYear: number | null;
+  endMonth: number | null;
+  endYear: number | null;
+  isCurrent: boolean;
+  description: string;
+  skills: string[];
+  published: boolean;
+};
+
+export async function saveExperience(input: ExperienceInput): Promise<Result> {
+  await requireAdmin();
+  const role = str(input.role, 160);
+  const company = str(input.company, 160);
+  if (!role) return { ok: false, error: "Title is required" };
+  if (!company) return { ok: false, error: "Company is required" };
+
+  const month = (v: unknown) => (Number.isInteger(v) && (v as number) >= 1 && (v as number) <= 12 ? (v as number) : null);
+  const year = (v: unknown) => (Number.isInteger(v) && (v as number) >= 1950 && (v as number) <= 2100 ? (v as number) : null);
+  const startMonth = month(input.startMonth);
+  const startYear = year(input.startYear);
+  if (!startYear) return { ok: false, error: "Start year is required" };
+  const isCurrent = Boolean(input.isCurrent);
+  const endMonth = isCurrent ? null : month(input.endMonth);
+  const endYear = isCurrent ? null : year(input.endYear);
+  if (!isCurrent && !endYear) return { ok: false, error: "Add an end year, or tick “I currently work here”" };
+  if (endYear && endYear * 12 + (endMonth ?? 12) < startYear * 12 + (startMonth ?? 1)) {
+    return { ok: false, error: "End date can't be before the start date" };
+  }
+  const url = str(input.companyUrl, 500);
+  if (url && !/^https?:\/\//i.test(url)) return { ok: false, error: "Company link must start with http:// or https://" };
+
+  const e = {
+    role,
+    company,
+    logo: uuidOrNull(input.companyLogoId),
+    url,
+    type: (EMPLOYMENT_TYPES as readonly string[]).includes(input.employmentType) ? input.employmentType : "",
+    location: str(input.location, 160),
+    locationType: (LOCATION_TYPES as readonly string[]).includes(input.locationType) ? input.locationType : "",
+    description: str(input.description, 5000),
+    skills: (input.skills ?? []).map((x) => str(x, 60)).filter(Boolean).slice(0, 20),
+    published: Boolean(input.published),
+  };
+
+  let id = input.id;
+  if (id) {
+    await db()`
+      update experiences set role=${e.role}, company=${e.company}, company_logo_id=${e.logo}, company_url=${e.url},
+        employment_type=${e.type}, location=${e.location}, location_type=${e.locationType},
+        start_month=${startMonth}, start_year=${startYear}, end_month=${endMonth}, end_year=${endYear},
+        is_current=${isCurrent}, description=${e.description}, skills=${e.skills}, published=${e.published},
+        updated_at=now()
+      where id=${id}`;
+  } else {
+    const rows = await db()`
+      insert into experiences (role, company, company_logo_id, company_url, employment_type, location, location_type,
+        start_month, start_year, end_month, end_year, is_current, description, skills, published)
+      values (${e.role}, ${e.company}, ${e.logo}, ${e.url}, ${e.type}, ${e.location}, ${e.locationType},
+        ${startMonth}, ${startYear}, ${endMonth}, ${endYear}, ${isCurrent}, ${e.description}, ${e.skills}, ${e.published})
+      returning id`;
+    id = rows[0].id as number;
+  }
+  refreshSite();
+  return { ok: true, id };
+}
+
+export async function deleteExperience(id: number): Promise<Result> {
+  await requireAdmin();
+  await db()`delete from experiences where id = ${id}`;
+  refreshSite();
+  return { ok: true };
+}
+
+export async function setExperiencePublished(id: number, value: boolean): Promise<Result> {
+  await requireAdmin();
+  await db()`update experiences set published = ${value} where id = ${id}`;
   refreshSite();
   return { ok: true };
 }
