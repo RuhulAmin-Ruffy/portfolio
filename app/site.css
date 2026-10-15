@@ -29,7 +29,7 @@
   --f-body:var(--font-body),'Inter',sans-serif;
   --f-mono:var(--font-mono),'IBM Plex Mono',monospace;
 }
-/* Dark theme: set on <html data-theme="dark"> by the toggle (or the device setting on first visit). */
+/* Dark theme: set on <html data-theme="dark"> when the visitor turns it on with the toggle. */
 :root[data-theme="dark"]{
   color-scheme:dark;
   --bg:#0f0f12;

@@ -1,7 +1,5 @@
 "use client";
 
-import { useEffect } from "react";
-
 type Theme = "light" | "dark";
 const KEY = "theme";
 
@@ -16,18 +14,6 @@ function apply(theme: Theme, animate: boolean) {
 
 /** Sun/moon switch in the nav. Which icon shows is decided by CSS from <html data-theme>, so it never flickers. */
 export default function ThemeToggle() {
-  // Until the visitor picks a theme, keep following the device setting live.
-  useEffect(() => {
-    const mq = window.matchMedia("(prefers-color-scheme: dark)");
-    const onChange = () => {
-      let stored: string | null = null;
-      try { stored = localStorage.getItem(KEY); } catch {}
-      if (stored !== "light" && stored !== "dark") apply(mq.matches ? "dark" : "light", true);
-    };
-    mq.addEventListener("change", onChange);
-    return () => mq.removeEventListener("change", onChange);
-  }, []);
-
   const toggle = () => {
     const next: Theme = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
     apply(next, true);
@@ -47,5 +33,5 @@ export default function ThemeToggle() {
   );
 }
 
-/** Runs in <head> before first paint: stored choice, else the device setting. */
-export const themeInitScript = `(function(){try{var t=localStorage.getItem('${KEY}');if(t!=='light'&&t!=='dark'){t=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'}document.documentElement.dataset.theme=t}catch(e){document.documentElement.dataset.theme='light'}})();`;
+/** Runs in <head> before first paint: light by default, dark only if the visitor chose it. */
+export const themeInitScript = `(function(){var t='light';try{if(localStorage.getItem('${KEY}')==='dark')t='dark'}catch(e){}document.documentElement.dataset.theme=t})();`;
