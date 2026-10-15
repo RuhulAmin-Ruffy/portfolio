@@ -126,13 +126,13 @@ export default async function Home() {
           <div className="reveal">
             <h2>{s.aboutHeading}</h2>
             {paragraphs(s.aboutBody).map((para, i) => <p key={i}>{para}</p>)}
-            {experiences.length > 0 && <ExperienceList items={experiences} heading={s.experienceHeading} />}
             {s.skillGroups.map((g) => (
               <div className="skill-group" key={g.title}>
                 <h4>{g.title}</h4>
                 <p className="skill-list">{g.items.join(" · ")}</p>
               </div>
             ))}
+            {experiences.length > 0 && <ExperienceList items={experiences} heading={s.experienceHeading} />}
           </div>
         </div>
       </section>

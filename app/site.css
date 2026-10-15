@@ -454,7 +454,7 @@ body.has-cursor,body.has-cursor a,body.has-cursor button{cursor:none;}
 .logo:hover .logo-img{transform:rotate(-8deg) scale(1.06);}
 
 /* ---------- EXPERIENCE (LinkedIn-style, inside About) ---------- */
-.xp{margin-top:36px;}
+.xp{margin-top:40px;}
 .about .about-label,.skill-group h4{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-soft);margin-bottom:16px;font-family:var(--f-mono) !important;font-weight:500;}
 .xp p{margin-bottom:0;max-width:none;}
 .xp-list{list-style:none;}
