@@ -3,15 +3,14 @@ import "../site.css";
 import SiteEffects from "@/components/site/SiteEffects";
 import SiteHeader from "@/components/site/SiteHeader";
 import { themeInitScript } from "@/components/site/ThemeToggle";
-import { getIllustrations, getSettings, mediaUrl } from "@/lib/content";
+import { SITE_ICONS, getIllustrations, getSettings, mediaUrl } from "@/lib/content";
 import { fontVars } from "@/lib/fonts";
 
 export async function generateMetadata(): Promise<Metadata> {
   const s = await getSettings();
   const image = mediaUrl(s.profilePhotoId) ?? undefined;
-  const icon = mediaUrl(s.logoId) ?? "/mark.svg";
   return {
-    icons: { icon, apple: icon },
+    icons: SITE_ICONS,
     title: { default: s.seoTitle, template: `%s — ${s.name}` },
     description: s.seoDescription,
     openGraph: { title: s.seoTitle, description: s.seoDescription, type: "website", images: image ? [image] : undefined },

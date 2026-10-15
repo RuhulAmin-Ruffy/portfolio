@@ -31,6 +31,15 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   footerText: "© {year}",
 };
 
+/** Browser-tab and home-screen icons (files in /public). */
+export const SITE_ICONS = {
+  icon: [
+    { url: "/favicon.svg", type: "image/svg+xml" },
+    { url: "/favicon-32.png", type: "image/png", sizes: "32x32" },
+  ],
+  apple: [{ url: "/apple-touch-icon.png", sizes: "180x180" }],
+};
+
 export function mediaUrl(id: string | null | undefined) {
   return id ? `/api/media/${id}` : null;
 }

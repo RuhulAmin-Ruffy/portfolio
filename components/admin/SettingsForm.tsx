@@ -39,7 +39,7 @@ export default function SettingsForm({ initial }: { initial: SiteSettings }) {
           <span className="label">Logo</span>
           <ImageField contain value={s.logoId} onChange={(v) => update("logoId", v)} emptyLabel="Colour mark" />
           <span className="help">
-            Replaces the four-colour square in the header, admin and browser tab. A square PNG with a transparent background works best.
+            Replaces the four-colour square in the header and admin. A square PNG with a transparent background works best.
           </span>
         </div>
         <div className="grid-2">
