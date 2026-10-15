@@ -41,8 +41,8 @@ const join = (...parts: string[]) => parts.filter(Boolean).join(" · ");
 export default function ExperienceList({ items, heading }: { items: Experience[]; heading: string }) {
   const groups = groupByCompany(items);
   return (
-    <div className="xp reveal">
-      <h3 className="xp-heading">{heading}</h3>
+    <div className="xp">
+      <h3 className="about-label">{heading}</h3>
       <ol className="xp-list">
         {groups.map((g) => {
           if (g.roles.length === 1) {

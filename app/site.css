@@ -346,9 +346,6 @@ body.has-cursor,body.has-cursor a,body.has-cursor button{cursor:none;}
 .about p{color:var(--ink-soft);margin-bottom:16px;max-width:520px;}
 .skill-group{margin-top:28px;}
 .skill-group h4{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-soft);margin-bottom:12px;font-family:var(--f-mono) !important;font-weight:500;}
-.pills{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:24px;}
-.pill{font-size:13px;padding:8px 14px;border-radius:100px;border:1px solid var(--line);background:var(--paper);transition:transform .2s cubic-bezier(.34,1.56,.64,1), background .2s ease, color .2s ease;}
-.pill:hover{transform:translateY(-3px);background:var(--ink);color:#fff;}
 
 /* ---------- CONTACT ---------- */
 .contact{background:var(--ink);color:#fff;border-radius:var(--radius-img);margin:0 32px;padding:80px 48px;text-align:center;}
@@ -456,16 +453,16 @@ body.has-cursor,body.has-cursor a,body.has-cursor button{cursor:none;}
 .logo-img{height:30px;width:auto;max-width:120px;object-fit:contain;flex-shrink:0;transition:transform .45s cubic-bezier(.34,1.56,.64,1);}
 .logo:hover .logo-img{transform:rotate(-8deg) scale(1.06);}
 
-/* ---------- EXPERIENCE (LinkedIn-style) ---------- */
-.xp{margin-top:72px;background:#fff;border:1px solid var(--line);border-radius:var(--radius-img);padding:28px 32px 8px;}
-@media (max-width:600px){.xp{padding:22px 18px 4px;margin-top:48px;}}
-.xp-heading{font-size:clamp(22px,2.4vw,26px);margin-bottom:20px;}
+/* ---------- EXPERIENCE (LinkedIn-style, inside About) ---------- */
+.xp{margin-top:36px;}
+.about .about-label,.skill-group h4{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-soft);margin-bottom:16px;font-family:var(--f-mono) !important;font-weight:500;}
 .xp p{margin-bottom:0;max-width:none;}
 .xp-list{list-style:none;}
-.xp-item{display:grid;grid-template-columns:52px 1fr;gap:16px;padding:20px 0;border-top:1px solid var(--line);}
+.xp-item{display:grid;grid-template-columns:44px 1fr;gap:14px;padding:18px 0;border-top:1px solid var(--line);}
 .xp-item:first-child{border-top:none;padding-top:0;}
-.xp-logo{width:52px;height:52px;border-radius:var(--radius-img);object-fit:contain;background:#fff;border:1px solid var(--line);}
-.xp-logo-fallback{display:grid;place-items:center;color:#fff;font-family:var(--f-display);font-weight:600;font-size:22px;border:none;}
+.xp-item:last-child{padding-bottom:0;}
+.xp-logo{width:44px;height:44px;border-radius:var(--radius-img);object-fit:contain;background:#fff;border:1px solid var(--line);}
+.xp-logo-fallback{display:grid;place-items:center;color:#fff;font-family:var(--f-display);font-weight:600;font-size:19px;border:none;}
 .xp-body h4{font-family:var(--f-body) !important;font-size:16px;font-weight:600;letter-spacing:0;line-height:1.35;}
 .xp-body a{text-decoration:none;}
 .xp-body a:hover{color:var(--violet);text-decoration:underline;}
@@ -488,3 +485,8 @@ body.has-cursor,body.has-cursor a,body.has-cursor button{cursor:none;}
 .xp-role::after{content:"";position:absolute;left:8px;top:16px;bottom:-4px;width:1px;background:var(--line);}
 .xp-role:last-child::after{display:none;}
 .xp-role:last-child{padding-bottom:4px;}
+
+/* skills as plain text, and the photo stays beside the longer About column */
+.about .skill-list{color:var(--ink);font-size:15px;line-height:1.7;margin-bottom:0;max-width:none;}
+.skill-group{margin-top:32px;}
+@media (min-width:821px){.about-photo{position:sticky;top:104px;}}
