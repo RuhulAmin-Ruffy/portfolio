@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "../site.css";
 import SiteEffects from "@/components/site/SiteEffects";
 import SiteHeader from "@/components/site/SiteHeader";
+import { themeInitScript } from "@/components/site/ThemeToggle";
 import { getIllustrations, getSettings, mediaUrl } from "@/lib/content";
 import { fontVars } from "@/lib/fonts";
 
@@ -23,7 +24,10 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
   const footer = s.footerText.replace("{year}", String(new Date().getFullYear()));
 
   return (
-    <html lang="en" className={fontVars}>
+    <html lang="en" className={fontVars} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+      </head>
       <body className="site">
         <SiteHeader name={s.name} ctaLabel={s.navCtaLabel} showIllustration={illustrations.length > 0} logoUrl={mediaUrl(s.logoId)} />
         <main>{children}</main>

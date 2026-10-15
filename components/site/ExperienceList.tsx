@@ -3,7 +3,7 @@ import { companyDuration, dateRange, groupByCompany } from "@/lib/experience";
 import type { Experience } from "@/lib/types";
 import SeeMore from "./SeeMore";
 
-const SWATCHES = ["var(--violet)", "var(--coral)", "var(--mint)", "var(--yellow)", "var(--ink)"];
+const SWATCHES = ["var(--violet)", "var(--coral)", "var(--mint)", "var(--yellow)", "#2c2b31"];
 const swatch = (name: string) => SWATCHES[[...name].reduce((a, c) => a + c.charCodeAt(0), 0) % SWATCHES.length];
 
 function Logo({ company, logoId }: { company: string; logoId: string | null }) {

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import ThemeToggle from "./ThemeToggle";
 
 type Props = { name: string; ctaLabel: string; showIllustration: boolean; logoUrl: string | null };
 
@@ -41,6 +42,7 @@ export default function SiteHeader({ name, ctaLabel, showIllustration, logoUrl }
           ))}
         </nav>
         <div className="nav-actions">
+          <ThemeToggle />
           <a href="/#contact" className="btn btn-primary nav-cta">{ctaLabel}</a>
           <button
             className="burger"
