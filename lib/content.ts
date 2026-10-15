@@ -31,11 +31,16 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   footerText: "© {year}",
 };
 
-/** Browser-tab and home-screen icons (files in /public). */
+/**
+ * Browser-tab and home-screen icons (files in /public), all rendered from the logo SVG.
+ * Raster only: Safari doesn't reliably use SVG tab icons, and the logo's ring text needs
+ * a font (Bodoni 72) that only Apple devices have, so it's baked into these images.
+ */
 export const SITE_ICONS = {
   icon: [
-    { url: "/favicon.svg", type: "image/svg+xml" },
+    { url: "/favicon.ico", sizes: "16x16 32x32 48x48" },
     { url: "/favicon-32.png", type: "image/png", sizes: "32x32" },
+    { url: "/icon-192.png", type: "image/png", sizes: "192x192" },
   ],
   apple: [{ url: "/apple-touch-icon.png", sizes: "180x180" }],
 };
